@@ -1,10 +1,19 @@
 import { useMemo, useState } from 'react'
 import {
-  ArrowDownRight, ArrowUpRight, BarChart3, Bell, BookOpen, BriefcaseBusiness,
-  ChevronDown, CircleHelp, ClipboardList, Compass, Download, Landmark,
-  LayoutDashboard, LineChart, Menu, RefreshCw, Search, Settings, ShieldAlert,
-  Sparkles, WalletCards, X,
+  AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3, Bell, BookOpen, BriefcaseBusiness,
+  CalendarDays, CheckCircle2, ChevronDown, CircleHelp, ClipboardList, Compass, Download, Landmark,
+  LayoutDashboard, LineChart, Menu, Plus, Search, Settings, ShieldAlert, SlidersHorizontal,
+  Target, TrendingDown, TrendingUp, WalletCards, X,
 } from 'lucide-react'
+
+const funds = [
+  { code: '159995', name: '华夏芯片 ETF 联接 A', type: '股票型', value: 28640, profit: 4238, day: 1.72, share: 30.8, tag: '半导体' },
+  { code: '110011', name: '易方达中小盘混合', type: '混合型', value: 18420, profit: 1290, day: 0.83, share: 19.8, tag: '消费成长' },
+  { code: '006195', name: '国泰中证全指通信设备 ETF', type: '股票型', value: 16580, profit: -652, day: -0.41, share: 17.8, tag: '通信' },
+  { code: '000217', name: '华安黄金 ETF 联接 A', type: 'QDII/商品', value: 10860, profit: 1764, day: 0.46, share: 11.7, tag: '黄金' },
+  { code: '003474', name: '南方天天利货币 B', type: '货币型', value: 8520, profit: 81, day: 0.02, share: 9.2, tag: '现金管理' },
+  { code: '006567', name: '招商中债 3-5 年国开债', type: '债券型', value: 5920, profit: 146, day: 0.01, share: 6.4, tag: '利率债' },
+]
 
 const sectorRows = [
   { rank: 1, name: '半导体', change: 2.86, flow: 18.42, ratio: 8.74, stock: '寒武纪-U', hot: true },
@@ -18,60 +27,59 @@ const sectorRows = [
 
 const nav = [
   ['总览', LayoutDashboard], ['市场', Compass], ['持仓', WalletCards], ['风险', ShieldAlert],
-  ['调仓', LineChart], ['策略', BarChart3], ['决策记录', ClipboardList],
+  ['调仓', SlidersHorizontal], ['策略', BarChart3], ['决策记录', ClipboardList],
 ]
 
-function FlowValue({ value, suffix = '亿' }) {
-  const up = value >= 0
-  return <span className={up ? 'rise' : 'fall'}>{up ? '+' : ''}{value.toFixed(2)}{suffix}</span>
-}
-
-function MiniChart() {
-  return <svg className="mini-chart" viewBox="0 0 440 168" role="img" aria-label="半导体今日主力净流入走势">
-    <defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop stopColor="#e85b4b" stopOpacity=".22"/><stop offset="1" stopColor="#e85b4b" stopOpacity="0"/></linearGradient></defs>
-    <g className="chart-grid"><path d="M0 32H440M0 78H440M0 124H440" /></g>
-    <path className="chart-area" d="M0 136 C19 132 24 139 42 127 S70 119 90 124 S116 108 130 112 S151 96 170 103 S190 82 210 89 S231 68 248 78 S270 51 287 61 S309 78 325 58 S344 38 364 47 S389 29 409 38 S426 21 440 28 L440 168 L0 168Z" />
-    <path className="chart-line" d="M0 136 C19 132 24 139 42 127 S70 119 90 124 S116 108 130 112 S151 96 170 103 S190 82 210 89 S231 68 248 78 S270 51 287 61 S309 78 325 58 S344 38 364 47 S389 29 409 38 S426 21 440 28" />
-    <circle cx="440" cy="28" r="4" className="chart-dot" />
-    <g className="chart-labels"><text x="0" y="164">09:30</text><text x="198" y="164">11:30</text><text x="390" y="164">14:55</text></g>
-  </svg>
-}
+const money = (n) => `¥${n.toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`
+function FlowValue({ value, suffix = '%' }) { const up = value >= 0; return <span className={up ? 'rise' : 'fall'}>{up ? '+' : ''}{value.toFixed(2)}{suffix}</span> }
+function SectionHeading({ title, text, action, icon: Icon = Download }) { return <section className="page-heading"><div><h1>{title}</h1><p>{text}</p></div>{action && <button className="outline-action"><Icon size={16}/>{action}</button>}</section> }
+function Metric({ label, value, detail, tone }) { return <div className="metric"><span>{label}</span><strong className={tone || ''}>{value}</strong>{detail && <small>{detail}</small>}</div> }
+function Bar({ value, color = 'blue' }) { return <span className={`bar ${color}`}><i style={{ width: `${Math.min(value, 100)}%` }} /></span> }
 
 function Sidebar({ active, setActive, expanded, onClose }) {
   return <aside className={`sidebar ${expanded ? 'is-open' : ''}`}>
     <div className="brand"><span className="brand-mark">散</span><span>散户</span><button className="mobile-close" onClick={onClose}><X size={18}/></button></div>
     <div className="portfolio-switch"><span>我的基金账户</span><ChevronDown size={15}/></div>
     <nav>{nav.map(([label, Icon]) => <button key={label} onClick={() => { setActive(label); onClose() }} className={active === label ? 'nav-link active' : 'nav-link'}><Icon size={18}/><span>{label}</span>{label === '决策记录' && <i>3</i>}</button>)}</nav>
-    <div className="sidebar-foot"><button className="nav-link"><BookOpen size={18}/><span>使用指南</span></button><button className="nav-link"><Settings size={18}/><span>设置</span></button><div className="local-note"><span></span><div><strong>本地数据模式</strong><small>数据仅用于个人分析</small></div></div></div>
+    <div className="sidebar-foot"><button className="nav-link"><BookOpen size={18}/><span>使用指南</span></button><button className="nav-link"><Settings size={18}/><span>设置</span></button><div className="local-note"><span></span><div><strong>演示数据模式</strong><small>数据仅用于产品展示</small></div></div></div>
   </aside>
 }
 
-function Market() {
-  const [kind, setKind] = useState('行业资金流')
-  const [period, setPeriod] = useState('今日')
-  const [selected, setSelected] = useState('半导体')
-  const rows = useMemo(() => kind === '行业资金流' ? sectorRows : sectorRows.map((row, i) => ({ ...row, name: ['人工智能', '机器人', '算力概念', '创新药', '新能源车', '低空经济', '消费电子'][i] })), [kind])
-  const selectedRow = rows.find((row) => row.name === selected) || rows[0]
-  return <main className="content">
-    <section className="page-heading"><div><h1>市场脉搏</h1><p>用资金流观察板块强弱，不替代投资决策。</p></div><button className="outline-action"><Download size={16}/> 导出数据</button></section>
-    <section className="market-summary">
-      <div><span>两市主力净流入</span><strong className="rise">+86.42 亿</strong><small>较昨日同期 <b>+21.6%</b></small></div>
-      <div><span>行业净流入板块</span><strong>46 / 86</strong><small><b className="rise">半导体</b> 领涨</small></div>
-      <div><span>概念净流入板块</span><strong>181 / 369</strong><small><b className="rise">人工智能</b> 居首</small></div>
-    </section>
-    <section className="toolbar"><div className="segmented">{['行业资金流', '概念资金流', '地域资金流'].map(item => <button onClick={() => {setKind(item); setSelected(item === '行业资金流' ? '半导体' : '人工智能')}} className={kind === item ? 'selected' : ''} key={item}>{item}</button>)}</div><div className="right-controls"><div className="period">{['今日', '5日', '10日'].map(item => <button onClick={() => setPeriod(item)} key={item} className={period === item ? 'selected' : ''}>{item}</button>)}</div><span className="timestamp"><span></span> 盘中更新 14:56:12</span></div></section>
-    <section className="market-grid">
-      <div className="flow-table-wrap"><header className="table-title"><div><h2>{kind}排行</h2><p>按主力净流入排序</p></div><button aria-label="了解资金流口径"><CircleHelp size={17}/></button></header><div className="table-scroll"><table><thead><tr><th>排名</th><th>板块</th><th>涨跌幅</th><th>主力净流入</th><th>净占比</th><th>领涨股</th></tr></thead><tbody>{rows.map(row => <tr className={selectedRow.name === row.name ? 'selected-row' : ''} onClick={() => setSelected(row.name)} key={row.name}><td><span className={`rank ${row.rank < 4 ? 'top' : ''}`}>{row.rank}</span></td><td><strong>{row.name}</strong>{row.hot && <em>热门</em>}</td><td><FlowValue value={row.change} suffix="%" /></td><td><FlowValue value={row.flow}/></td><td><FlowValue value={row.ratio} suffix="%" /></td><td>{row.stock}</td></tr>)}</tbody></table></div><footer>数据来源：东方财富公开行情 · 资金流为交易口径推算，仅供参考</footer></div>
-      <aside className="detail-panel"><div className="detail-top"><div><span className="eyeless-label">资金流详情</span><h2>{selectedRow.name}</h2><p><FlowValue value={selectedRow.flow}/> 主力净流入</p></div><button><ChevronDown size={18}/></button></div><div className="chart-tabs"><span className="selected">分时</span><span>日线</span></div><MiniChart/><div className="flow-split"><div><span>流入</span><strong className="rise">126.78亿</strong></div><div><span>流出</span><strong className="fall">108.36亿</strong></div><div><span>净占比</span><strong className="rise">8.74%</strong></div></div><div className="constituents"><h3>主力净流入靠前个股</h3>{['寒武纪-U', '中芯国际', '海光信息'].map((item, i) => <div key={item}><span>{i + 1}</span><strong>{item}</strong><FlowValue value={[5.86, 4.19, 3.47][i]}/></div>)}</div></aside>
-    </section>
-    <section className="holding-link"><header><div><h2>与你的持仓关联</h2><p>以下是你所持基金当前覆盖的重点板块</p></div><button>查看持仓透视 <ArrowUpRight size={15}/></button></header><div className="exposure-list"><article><div className="theme-icon purple"><Landmark size={19}/></div><div><strong>半导体</strong><span>2 只基金覆盖 · 估算配置 18.6%</span></div><FlowValue value={18.42}/><ArrowUpRight className="link-arrow" size={17}/></article><article><div className="theme-icon teal"><BriefcaseBusiness size={19}/></div><div><strong>医药生物</strong><span>1 只基金覆盖 · 估算配置 11.2%</span></div><FlowValue value={-3.88}/><ArrowDownRight className="link-arrow" size={17}/></article></div></section>
-  </main>
-}
+function Overview({ go }) { return <main className="content">
+  <SectionHeading title="持仓总览" text="用一页看清资产、收益和需要留意的组合信号。" action="更新持仓" icon={Plus}/>
+  <section className="market-summary overview-metrics"><Metric label="持仓总市值" value="¥88,940" detail="共 6 只基金"/><Metric label="累计收益" value="+¥6,867" detail="收益率 +8.37%" tone="rise"/><Metric label="今日收益" value="+¥723" detail="较昨日 +0.82%" tone="rise"/></section>
+  <section className="two-grid"><article className="panel"><header className="panel-head"><div><h2>资产配置</h2><p>按基金类型划分</p></div><button onClick={() => go('调仓')}>查看目标配置 <ArrowUpRight size={15}/></button></header><div className="allocation"><div className="allocation-ring"><b>¥8.9万</b><span>总资产</span></div><div className="allocation-list">{[['股票型',48.6,'coral'],['混合型',19.8,'blue'],['QDII/商品',11.7,'gold'],['货币型',9.2,'teal'],['债券型',6.4,'slate']].map(([n,v,c]) => <div key={n}><span><i className={c}/>{n}</span><strong>{v}%</strong><Bar value={v} color={c}/></div>)}</div></div></article>
+  <article className="panel"><header className="panel-head"><div><h2>组合提示</h2><p>基于当前持仓结构</p></div><button onClick={() => go('风险')}>风险详情 <ArrowUpRight size={15}/></button></header><div className="insights"><div className="insight warning"><AlertTriangle size={18}/><div><strong>权益仓位偏高</strong><p>股票及混合型合计 68.4%，高于设定目标 8.4%。</p></div></div><div className="insight positive"><CheckCircle2 size={18}/><div><strong>流动性充足</strong><p>货币与债券类合计 15.6%，可覆盖近期计划。</p></div></div><div className="insight neutral"><Target size={18}/><div><strong>板块关注</strong><p>半导体相关敞口 25.6%，请留意集中度变化。</p></div></div></div></article></section>
+  <section className="panel fund-panel"><header className="panel-head"><div><h2>基金持仓</h2><p>净值与收益为演示数据，真实版本可同步公开基金行情。</p></div><button onClick={() => go('持仓')}>持仓透视 <ArrowUpRight size={15}/></button></header><FundTable /></section>
+</main> }
 
-function Placeholder({ title }) { return <main className="content placeholder"><Sparkles size={26}/><h1>{title}</h1><p>该模块将沿用原版 sanhu 的分析逻辑，在下一步接入后端数据。</p></main> }
+function FundTable() { return <div className="table-scroll"><table><thead><tr><th>基金</th><th>类型</th><th>持有金额</th><th>累计收益</th><th>今日估值</th><th>占比</th></tr></thead><tbody>{funds.map(f => <tr key={f.code}><td><strong>{f.name}</strong><small className="code">{f.code} · {f.tag}</small></td><td>{f.type}</td><td>{money(f.value)}</td><td><FlowValue value={f.profit} suffix="" /></td><td><FlowValue value={f.day}/></td><td><span className="share-cell">{f.share}%<Bar value={f.share} color="blue"/></span></td></tr>)}</tbody></table></div> }
 
-export default function App() {
-  const [active, setActive] = useState('市场')
-  const [expanded, setExpanded] = useState(false)
-  return <div className="app-shell"><Sidebar active={active} setActive={setActive} expanded={expanded} onClose={() => setExpanded(false)}/><div className="shell-main"><header className="topbar"><button className="menu-button" onClick={() => setExpanded(true)}><Menu size={21}/></button><div className="search"><Search size={17}/><input placeholder="搜索基金、板块或代码" /></div><div className="topbar-tools"><span>2026年8月6日，周四</span><button className="icon-button"><Bell size={18}/></button><button className="avatar">A</button></div></header>{active === '市场' ? <Market/> : <Placeholder title={active}/>}</div></div>
-}
+function Holdings() { return <main className="content"><SectionHeading title="持仓透视" text="穿透基金包装，观察底层行业分布与持股重叠。" action="刷新季报"/>
+  <section className="market-summary"><Metric label="已分析权益基金" value="4 / 4" detail="最新季报 2026Q2"/><Metric label="等效独立基金数" value="3.2" detail="6 只基金并非完全独立"/><Metric label="前五行业集中度" value="64.7%" detail="半导体敞口最高" tone="rise"/></section>
+  <section className="two-grid"><article className="panel"><header className="panel-head"><div><h2>行业暴露</h2><p>按基金资产权重估算</p></div><CircleHelp size={17}/></header><div className="exposure-bars">{[['半导体',25.6,'coral'],['通信设备',14.3,'blue'],['电子制造',9.4,'blue'],['黄金与贵金属',8.7,'gold'],['消费服务',6.7,'teal'],['医药生物',5.2,'slate']].map(([n,v,c]) => <div key={n}><span>{n}</span><Bar value={v * 3} color={c}/><strong>{v}%</strong></div>)}</div></article>
+  <article className="panel"><header className="panel-head"><div><h2>重叠持股</h2><p>多只基金同时持有的标的</p></div><span className="data-label">穿透数据</span></header><div className="overlap-list">{[['中芯国际','3 只基金',6.84],['寒武纪-U','2 只基金',4.97],['立讯精密','2 只基金',3.12],['中际旭创','2 只基金',2.76]].map(([n,c,v], i) => <div key={n}><b>{i+1}</b><span><strong>{n}</strong><small>{c}</small></span><FlowValue value={v}/></div>)}</div></article></section>
+  <section className="panel fund-panel"><header className="panel-head"><div><h2>单基金穿透</h2><p>基金季报通常存在披露时滞，页面需明确展示报告期。</p></div><span className="data-label">报告期：2026-06-30</span></header><FundTable /></section>
+</main> }
+
+function Risk() { const rows = [['单一行业集中度','25.6%','建议不高于 25%','预警'],['单只基金集中度','30.8%','建议不高于 30%','预警'],['相关性','0.58','组合相关性中等','关注'],['最大回撤（近一年）','-12.4%','可接受区间：-15% 以内','正常']]; return <main className="content"><SectionHeading title="风险分析" text="使用集中度、波动和回撤检查组合，而不作买卖指令。" action="生成报告"/>
+  <section className="market-summary risk-metrics"><Metric label="综合风险等级" value="中等" detail="适合中等波动承受度"/><Metric label="年化波动率" value="14.8%" detail="过去 12 个月" tone="rise"/><Metric label="最大回撤" value="-12.4%" detail="近一年" tone="fall"/></section>
+  <section className="two-grid"><article className="panel"><header className="panel-head"><div><h2>风险雷达</h2><p>五个维度均为演示口径</p></div></header><div className="radar-wrap"><div className="radar"><i/><i/><i/><b>集中度</b><b>波动率</b><b>回撤</b><b>流动性</b><b>相关性</b></div><div className="risk-copy"><strong>需要关注集中度</strong><p>组合大部分风险来自科技成长板块。若不符合你的投资期限，可通过增加低相关资产平衡。</p><button>查看调仓建议 <ArrowUpRight size={15}/></button></div></div></article>
+  <article className="panel"><header className="panel-head"><div><h2>相关性矩阵</h2><p>数值越接近 1，走势越相似</p></div></header><Correlation /></article></section>
+  <section className="panel alert-panel"><header className="panel-head"><div><h2>风险检查项</h2><p>每条告警均带有当前数值与参考阈值。</p></div></header><div className="risk-list">{rows.map(([n,v,d,s]) => <div key={n}><span className={`risk-dot ${s}`}/><strong>{n}</strong><b>{v}</b><small>{d}</small><em className={s}>{s}</em></div>)}</div></section>
+</main> }
+function Correlation() { const nums = [['1.00','.68','.55','.32'],['.68','1.00','.62','.27'],['.55','.62','1.00','.18'],['.32','.27','.18','1.00']]; return <div className="corr"><div className="corr-names"><span>本组合</span><span>芯片</span><span>通信</span><span>黄金</span></div><div className="corr-grid">{nums.flat().map((n,i) => <b key={i} style={{opacity: .35 + Number(n)*.65}}>{n}</b>)}</div></div> }
+
+function Rebalance() { const [target, setTarget] = useState(40); return <main className="content"><SectionHeading title="调仓建议" text="与个人目标配置进行对照，执行与否始终由你决定。" action="编辑目标" icon={SlidersHorizontal}/>
+  <section className="panel target-panel"><header className="panel-head"><div><h2>目标配置</h2><p>可按你的风险偏好调整；当前页面修改仅为演示。</p></div><span className="data-label">合计 100%</span></header><div className="target-editor"><div><label>股票型 <b>{target}%</b></label><input type="range" min="20" max="60" value={target} onChange={e => setTarget(+e.target.value)}/></div>{[['混合型',25],['债券型',15],['货币型',10],['QDII/商品',10]].map(([n,v]) => <div key={n}><label>{n}<b>{v}%</b></label><span className="fake-range"><i style={{width:`${v * 1.7}%`}}/></span></div>)}</div></section>
+  <section className="two-grid"><article className="panel"><header className="panel-head"><div><h2>当前与目标</h2><p>配置差异以百分点展示</p></div></header><div className="compare-bars">{[['股票型',48.6,target],['混合型',19.8,25],['债券型',6.4,15],['货币型',9.2,10],['QDII/商品',11.7,10]].map(([n,c,t]) => <div key={n}><span>{n}</span><div><Bar value={c*1.5} color="blue"/><Bar value={t*1.5} color="teal"/></div><strong className={c>t?'rise':'fall'}>{c>t?'+':''}{(c-t).toFixed(1)}%</strong></div>)}<p className="legend"><i className="blue"/>当前配置 <i className="teal"/>目标配置</p></div></article><article className="panel"><header className="panel-head"><div><h2>建议动作</h2><p>按目标配置估算</p></div></header><div className="action-list">{[['减少','华夏芯片 ETF 联接 A','¥7,900'],['增加','招商中债 3-5 年国开债','¥5,630'],['增加','南方天天利货币 B','¥2,270']].map(([a,n,m]) => <div key={n}><span className={a==='减少'?'action-sell':'action-buy'}>{a}</span><strong>{n}</strong><b>{m}</b></div>)}</div></article></section>
+</main> }
+
+function Strategy() { return <main className="content"><SectionHeading title="策略模拟" text="先用历史数据验证定投和止盈设想，再决定是否采用。" action="新建模拟" icon={Plus}/><section className="market-summary"><Metric label="已保存策略" value="2" detail="1 个历史回测，1 个观察中"/><Metric label="最佳年化收益" value="12.6%" detail="历史表现不代表未来" tone="rise"/><Metric label="回测区间" value="36 个月" detail="2023-08 至 2026-07"/></section><section className="two-grid"><article className="panel strategy-card"><header className="panel-head"><div><h2>每月定投 · 半导体</h2><p>历史回测 · 每月 1,000 元</p></div><span className="data-label">已完成</span></header><div className="strategy-chart"><svg viewBox="0 0 500 180"><path d="M0 150 C55 145 50 132 95 135 S137 104 178 115 S218 100 260 91 S300 118 337 78 S377 53 418 60 S458 28 500 20 L500 180 L0 180Z"/><polyline points="0,150 40,146 95,135 136,108 178,115 218,100 260,91 300,118 337,78 377,53 418,60 458,28 500,20"/></svg></div><div className="strategy-stats"><Metric label="累计投入" value="¥36,000"/><Metric label="期末价值" value="¥42,514" tone="rise"/><Metric label="最大回撤" value="-18.6%" tone="fall"/></div></article><article className="panel"><header className="panel-head"><div><h2>创建观察模拟</h2><p>虚拟记录，不连接交易账户</p></div></header><div className="simulation-form"><label>选择基金 <select><option>华夏芯片 ETF 联接 A</option><option>易方达中小盘混合</option></select></label><label>每月投入 <input defaultValue="1000" inputMode="decimal"/> 元</label><label>观察期限 <select><option>12 个月</option><option>24 个月</option></select></label><button className="primary-action">开始模拟</button></div></article></section></main> }
+
+function Decisions() { const [records, setRecords] = useState([{title:'半导体基金是否继续定投',date:'2026-08-05',status:'待复盘',reason:'估值与行业资金流同步改善，维持原计划。'},{title:'增加债券基金配置',date:'2026-08-01',status:'已执行',reason:'降低权益集中度，作为组合稳定器。'},{title:'黄金基金止盈规则',date:'2026-07-18',status:'观察中',reason:'达到目标收益前不因短期波动退出。'}]); return <main className="content"><SectionHeading title="决策记录" text="记录买入、持有或卖出的理由，帮助自己事后复盘。" action="新建记录" icon={Plus}/><section className="panel decision-panel"><header className="panel-head"><div><h2>决策台账</h2><p>把判断写下来，比只看结果更能改善长期决策。</p></div><button onClick={() => setRecords([{title:'新的基金配置判断',date:'刚刚',status:'草稿',reason:'请补充这次决策的依据和验证条件。'}, ...records])}>添加一条 <Plus size={15}/></button></header><div className="decision-list">{records.map((r,i) => <article key={r.title+i}><div className="decision-date"><CalendarDays size={17}/><span>{r.date}</span></div><div><h3>{r.title}</h3><p>{r.reason}</p></div><span className={`status ${r.status}`}>{r.status}</span><button aria-label="查看记录"><ArrowUpRight size={17}/></button></article>)}</div></section></main> }
+
+function MiniChart() { return <svg className="mini-chart" viewBox="0 0 440 168"><defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop stopColor="#e85b4b" stopOpacity=".22"/><stop offset="1" stopColor="#e85b4b" stopOpacity="0"/></linearGradient></defs><g className="chart-grid"><path d="M0 32H440M0 78H440M0 124H440" /></g><path className="chart-area" d="M0 136 C19 132 24 139 42 127 S70 119 90 124 S116 108 130 112 S151 96 170 103 S190 82 210 89 S231 68 248 78 S270 51 287 61 S309 78 325 58 S344 38 364 47 S389 29 409 38 S426 21 440 28 L440 168 L0 168Z" /><path className="chart-line" d="M0 136 C19 132 24 139 42 127 S70 119 90 124 S116 108 130 112 S151 96 170 103 S190 82 210 89 S231 68 248 78 S270 51 287 61 S309 78 325 58 S344 38 364 47 S389 29 409 38 S426 21 440 28" /><circle cx="440" cy="28" r="4" className="chart-dot" /></svg> }
+function Market() { const [kind,setKind]=useState('行业资金流'); const [selected,setSelected]=useState('半导体'); const rows=useMemo(()=>kind==='行业资金流'?sectorRows:sectorRows.map((r,i)=>({...r,name:['人工智能','机器人','算力概念','创新药','新能源车','低空经济','消费电子'][i]})),[kind]); const row=rows.find(r=>r.name===selected)||rows[0]; return <main className="content"><SectionHeading title="市场脉搏" text="用资金流观察板块强弱，不替代投资决策。" action="导出数据"/><section className="market-summary"><Metric label="两市主力净流入" value="+86.42 亿" detail="较昨日同期 +21.6%" tone="rise"/><Metric label="行业净流入板块" value="46 / 86" detail="半导体领涨"/><Metric label="概念净流入板块" value="181 / 369" detail="人工智能居首"/></section><section className="toolbar"><div className="segmented">{['行业资金流','概念资金流','地域资金流'].map(k=><button onClick={()=>{setKind(k);setSelected(k==='行业资金流'?'半导体':'人工智能')}} className={kind===k?'selected':''} key={k}>{k}</button>)}</div><span className="timestamp"><i/>盘中更新 14:56:12</span></section><section className="market-grid"><div className="flow-table-wrap"><header className="table-title"><div><h2>{kind}排行</h2><p>按主力净流入排序</p></div><CircleHelp size={17}/></header><div className="table-scroll"><table><thead><tr><th>排名</th><th>板块</th><th>涨跌幅</th><th>主力净流入</th><th>净占比</th><th>领涨股</th></tr></thead><tbody>{rows.map(r=><tr className={row.name===r.name?'selected-row':''} onClick={()=>setSelected(r.name)} key={r.name}><td><span className={`rank ${r.rank<4?'top':''}`}>{r.rank}</span></td><td><strong>{r.name}</strong>{r.hot&&<em>热门</em>}</td><td><FlowValue value={r.change}/></td><td><FlowValue value={r.flow} suffix="亿"/></td><td><FlowValue value={r.ratio}/></td><td>{r.stock}</td></tr>)}</tbody></table></div><footer>数据来源：东方财富公开行情 · 资金流为交易口径推算，仅供参考</footer></div><aside className="detail-panel"><div className="detail-top"><div><span>资金流详情</span><h2>{row.name}</h2><p><FlowValue value={row.flow} suffix="亿"/> 主力净流入</p></div><ChevronDown size={18}/></div><MiniChart/><div className="flow-split"><Metric label="流入" value="126.78亿" tone="rise"/><Metric label="流出" value="108.36亿" tone="fall"/><Metric label="净占比" value="8.74%" tone="rise"/></div><div className="constituents"><h3>主力净流入靠前个股</h3>{['寒武纪-U','中芯国际','海光信息'].map((n,i)=><div key={n}><span>{i+1}</span><strong>{n}</strong><FlowValue value={[5.86,4.19,3.47][i]} suffix="亿"/></div>)}</div></aside></section></main> }
+
+export default function App() { const [active,setActive]=useState('总览'); const [expanded,setExpanded]=useState(false); const pages={总览:<Overview go={setActive}/>,市场:<Market/>,持仓:<Holdings/>,风险:<Risk/>,调仓:<Rebalance/>,策略:<Strategy/>,决策记录:<Decisions/>}; return <div className="app-shell"><Sidebar active={active} setActive={setActive} expanded={expanded} onClose={()=>setExpanded(false)}/><div className="shell-main"><header className="topbar"><button className="menu-button" onClick={()=>setExpanded(true)}><Menu size={21}/></button><div className="search"><Search size={17}/><input placeholder="搜索基金、板块或代码" /></div><div className="topbar-tools"><span>2026年8月6日，周四</span><button className="icon-button"><Bell size={18}/></button><button className="avatar">A</button></div></header>{pages[active]}</div></div> }
