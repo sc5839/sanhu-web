@@ -38,10 +38,10 @@ function Bar({ value, color = 'blue' }) { return <span className={`bar ${color}`
 
 function Sidebar({ active, setActive, expanded, onClose, notify }) {
   return <aside className={`sidebar ${expanded ? 'is-open' : ''}`}>
-    <div className="brand"><span className="brand-mark">散</span><span>散户</span><button className="mobile-close" onClick={onClose}><X size={18}/></button></div>
+    <div className="brand"><span className="brand-mark">A</span><span>Aidon’s 基金管理工具</span><button className="mobile-close" onClick={onClose}><X size={18}/></button></div>
     <div className="portfolio-switch"><span>我的基金账户</span><ChevronDown size={15}/></div>
     <nav>{nav.map(([label, Icon]) => <button key={label} onClick={() => { setActive(label); onClose() }} className={active === label ? 'nav-link active' : 'nav-link'}><Icon size={18}/><span>{label}</span>{label === '决策记录' && <i>3</i>}</button>)}</nav>
-    <div className="sidebar-foot"><button className="nav-link" onClick={() => notify('使用指南将在接入真实账户后开放。')}><BookOpen size={18}/><span>使用指南</span></button><button className="nav-link" onClick={() => notify('设置面板已预留，当前为演示模式。')}><Settings size={18}/><span>设置</span></button><div className="local-note"><span></span><div><strong>演示数据模式</strong><small>数据仅用于产品展示</small></div></div></div>
+    <div className="sidebar-foot"><button className="nav-link" onClick={() => notify('使用指南将在接入真实账户后开放。')}><BookOpen size={18}/><span>使用指南</span></button><button className="nav-link" onClick={() => notify('设置面板已预留，当前为演示模式。')}><Settings size={18}/><span>设置</span></button><div className="local-note"><span></span><div><strong>版本 v0.3.0</strong><small>2026-08-06 · 交互与页面迭代</small></div></div></div>
   </aside>
 }
 
