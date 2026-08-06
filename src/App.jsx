@@ -26,7 +26,7 @@ const sectorRows = [
 ]
 
 const nav = [
-  ['总览', LayoutDashboard], ['市场', Compass], ['持仓', WalletCards], ['风险', ShieldAlert],
+  ['总览', LayoutDashboard], ['持仓', WalletCards], ['市场', Compass], ['风险', ShieldAlert],
   ['调仓', SlidersHorizontal], ['策略', BarChart3], ['决策记录', ClipboardList],
 ]
 
